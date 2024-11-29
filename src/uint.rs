@@ -14,7 +14,7 @@ use core::num::ParseIntError;
 
 /// A 256-bit unsigned integer type.
 #[derive(Clone, Copy, Default, Eq, Hash, PartialEq)]
-#[repr(transparent)]
+#[repr(packed(8))]
 pub struct U256(pub [u128; 2]);
 
 impl U256 {
