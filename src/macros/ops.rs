@@ -51,7 +51,8 @@ macro_rules! impl_ops {
         __impl_ops_unop! {
             impl Not for $int {
                 not(x) {
-                    let $int([a, b]) = x;
+                    let a = x.first();
+                    let b = x.second();
                     $int([!a, !b])
                 }
             }
@@ -371,8 +372,19 @@ macro_rules! __impl_ops_bitwise {
 
             #[inline]
             fn $method(self, rhs: &'_ $int) -> Self::Output {
-                let $int([a0, a1]) = self;
-                let $int([b0, b1]) = rhs;
+                /*let a0 = unsafe { core::ptr::read_unaligned(&self.0[0]) };
+                let a1 = core::ptr::read_unaligned(&self.0[1]);
+                let b0 = core::ptr::read_unaligned(&rhs.0[0]);
+                let b1 = core::ptr::read_unaligned(&rhs.0[1]);
+                */
+                //let a0 = unsafe { core::ptr::read_unaligned(core::ptr::addr_of!(self.0[1]) as *const &mut u128) };
+                let a0 = self.first();
+                let a1 = self.second();
+                let b0 = rhs.first();
+                let b1 = rhs.second();
+                    
+                //let $int([a0, a1]) = self;
+                //let $int([b0, b1]) = rhs;
                 $int([a0 $x b0, a1 $x b1])
             }
         }
@@ -528,10 +540,16 @@ macro_rules! __impl_ops_bitwise_assign {
         impl ::core::ops::$op<&'_ $int> for $int {
             #[inline]
             fn $method(&mut self, rhs: &'_ $int) {
-                let $int([a0, a1]) = self;
-                let $int([b0, b1]) = rhs;
-                *a0 $x b0;
-                *a1 $x b1;
+                {
+                    let a0 = self.first_mut();
+                    let b0 = rhs.first();
+                    *a0 $x b0;
+                }
+                {
+                    let a1 = self.second_mut();
+                    let b1 = rhs.second();    
+                    *a1 $x b1;
+                }
             }
         }
 

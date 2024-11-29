@@ -10,11 +10,11 @@ mod parse;
 
 pub use self::convert::AsI256;
 use crate::uint::U256;
-use core::num::ParseIntError;
+use core::{num::ParseIntError, ptr};
 
 /// A 256-bit signed integer type.
 #[derive(Clone, Copy, Default, Eq, Hash, PartialEq)]
-#[repr(transparent)]
+#[repr(C, packed(8))]
 pub struct I256(pub [i128; 2]);
 
 impl I256 {
@@ -61,16 +61,40 @@ impl I256 {
         }
     }
 
+    /// Get first 128-bit word for this unsigned integer.
+    #[inline]
+    pub fn first(&self) -> &i128 {
+        unsafe { ptr::read_unaligned(ptr::addr_of!(self.0[0]) as *const &i128) }
+    }
+
+    /// Get first 128-bit word for this unsigned integer as a mutable reference.
+    #[inline]
+    pub fn first_mut(&mut self) -> &mut i128 {
+        unsafe { ptr::read_unaligned(ptr::addr_of!(self.0[0]) as *const &mut i128) }
+    }
+
+    /// Get second 128-bit word for this unsigned integer.
+    #[inline]
+    pub fn second(&self) -> &i128 {
+        unsafe { ptr::read_unaligned(ptr::addr_of!(self.0[1]) as *const &i128) }
+    }
+
+    /// Get second 128-bit word for this unsigned integer as a mutable reference.
+    #[inline]
+    pub fn second_mut(&mut self) -> &mut i128 {
+        unsafe { ptr::read_unaligned(ptr::addr_of!(self.0[1]) as *const &mut i128) }
+    }
+
     /// Get the low 128-bit word for this signed integer.
     #[inline]
     pub fn low(&self) -> &i128 {
         #[cfg(target_endian = "little")]
         {
-            &self.0[0]
+            unsafe { ptr::read_unaligned(ptr::addr_of!(self.0[0]) as *const &i128) }
         }
         #[cfg(target_endian = "big")]
         {
-            &self.0[1]
+            unsafe { ptr::read_unaligned(ptr::addr_of!(self.0[1]) as *const &i128) }
         }
     }
 
@@ -79,11 +103,11 @@ impl I256 {
     pub fn low_mut(&mut self) -> &mut i128 {
         #[cfg(target_endian = "little")]
         {
-            &mut self.0[0]
+            unsafe { ptr::read_unaligned(ptr::addr_of!(self.0[0]) as *const &mut i128) }
         }
         #[cfg(target_endian = "big")]
         {
-            &mut self.0[1]
+            unsafe { ptr::read_unaligned(ptr::addr_of!(self.0[1]) as *const &mut i128) }
         }
     }
 
@@ -92,11 +116,11 @@ impl I256 {
     pub fn high(&self) -> &i128 {
         #[cfg(target_endian = "little")]
         {
-            &self.0[1]
+            unsafe { ptr::read_unaligned(ptr::addr_of!(self.0[1]) as *const &i128) }
         }
         #[cfg(target_endian = "big")]
         {
-            &self.0[0]
+            unsafe { ptr::read_unaligned(ptr::addr_of!(self.0[0]) as *const &i128) }
         }
     }
 
@@ -106,11 +130,11 @@ impl I256 {
     pub fn high_mut(&mut self) -> &mut i128 {
         #[cfg(target_endian = "little")]
         {
-            &mut self.0[1]
+            unsafe { ptr::read_unaligned(ptr::addr_of!(self.0[1]) as *const &mut i128) }
         }
         #[cfg(target_endian = "big")]
         {
-            &mut self.0[0]
+            unsafe { ptr::read_unaligned(ptr::addr_of!(self.0[0]) as *const &mut i128) }
         }
     }
 
